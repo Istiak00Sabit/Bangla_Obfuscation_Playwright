@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="bn"><meta charset="utf-8"><title>Synthetic local collector fixture</title>
+<style>body{font:22px sans-serif;max-width:900px;margin:auto}article{border:1px solid #aaa;margin:20px;padding:20px}button{font-size:18px}.hidden{display:none}</style>
+<h1>Created illustrative data — not real Facebook posts</h1>
+<article role="article">
+  <a href="https://www.facebook.com/example/posts/100">Synthetic source</a>
+  <div data-ad-preview="message">তিনি লা / থি দিয়েছেন।</div>
+  <article role="article" data-obfuscation-kind="comment"><a href="https://www.facebook.com/example/posts/100?comment_id=10">comment</a><div data-obfuscation-message>একটি স্বাভাবিক বাক্য।</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>ছু রি দিয়ে লেখা।</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>চা*টে</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>খু&#x200B;ন</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>banglaকথা ১কের heyyy</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>একই মন্তব্য</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>একই মন্তব্য</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>=1+1</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message id="expandable">আংশিক লেখা</div><button onclick="document.getElementById('expandable').textContent='সম্পূর্ণ লেখা ছু রি';this.remove()">See more</button></article>
+  <article role="article" class="hidden"><div data-obfuscation-message>HIDDEN_NOT_A_RECORD</div></article>
+  <article role="article" data-obfuscation-kind="comment"><div data-obfuscation-message>সাধারণ মন্তব্য।</div><button id="reply" onclick="document.body.dataset.writeAction='clicked'">Reply</button></article>
+</article>
+<article role="article"><a href="https://www.facebook.com/example/posts/101">Synthetic second source</a><div data-ad-preview="message">স্বাভাবিক বাংলা বাক্য।</div></article>
+<article role="article"><div data-ad-preview="message">  &#xA0;খু&#x200D;ন&#x200C;  </div></article>
+<article role="article">Fallback text with no known message selector <button>Like</button><article role="article">Fallback child comment</article></article>
+</html>
