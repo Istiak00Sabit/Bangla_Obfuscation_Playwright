@@ -1,0 +1,9 @@
+.venv/
+.browser-profile/
+data/
+demo_output/
+__pycache__/
+*.pyc
+urls.txt
+annotated*.csv
+*.log

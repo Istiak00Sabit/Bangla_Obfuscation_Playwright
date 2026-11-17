@@ -1,0 +1,4 @@
+# Copy this file to urls.txt and add one Facebook page/post URL per line.
+# Local urls.txt is ignored by git, so updates will preserve your source list.
+# Replace the placeholder with your actual URL and remove the leading #.
+# https://www.facebook.com/PAGE/posts/POST_ID

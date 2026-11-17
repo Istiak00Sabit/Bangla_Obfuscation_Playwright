@@ -1,0 +1,11 @@
+Validation updated 2026-11-17 UTC
+
+18 non-browser tests passed; 2 real-browser tests explicitly skipped.
+Five new tests cover existing-Chrome attach invocation, new-tab ownership,
+cleanup without Browser/BrowserContext close, connection errors and CLI options.
+Those attach tests use mocks, not a live Windows Chrome connection.
+Python syntax parse and updated collect --help passed.
+Original extract.js syntax check passed; extract.js unchanged by this update.
+The original Chromium launch attempt failed due to socket permission restrictions.
+No live Facebook or real-user Chrome session was accessed in the creation host.
+No claim of complete obfuscation detection or complete Facebook crawl coverage.
