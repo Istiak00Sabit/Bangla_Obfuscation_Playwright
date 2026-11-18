@@ -19,6 +19,13 @@ from urllib.parse import parse_qs, urlparse
 
 from signals import ANNOTATION_TYPES, analyze
 
+BD_PUBLIC_PAGES = (
+    'https://www.facebook.com/DailyProthomAlo',
+    'https://www.facebook.com/JamunaTelevision',
+    'https://www.facebook.com/bcbtigercricket',
+    'https://www.facebook.com/channelitv',
+)
+
 ROOT = Path(__file__).resolve().parent
 EXTRACT_JS = (ROOT / 'extract.js').read_text(encoding='utf-8')
 READ_MORE = re.compile(
@@ -239,7 +246,21 @@ def browser_options(args, persistent=True):
     return options
 
 
-def collect_page(page, source_url, dataset, args, fixture=False):
+def remember_post_links(snapshot, links, limit):
+    for row in snapshot['records']:
+        if len(links) >= limit:
+            break
+        url = row.get('item_url', '')
+        if row['kind'] != 'post' or not is_facebook_url(url):
+            continue
+        parsed = urlparse(url)
+        if '/posts/' in parsed.path or '/videos/' in parsed.path or '/permalink/' in parsed.path:
+            links.setdefault(parsed._replace(query='', fragment='').geturl(), None)
+        elif 'story_fbid' in parse_qs(parsed.query):
+            links.setdefault(parsed._replace(fragment='').geturl(), None)
+
+
+def collect_page(page, source_url, dataset, args, fixture=False, post_links=None):
     log = {'source_url': source_url, 'started_at_utc': now(), 'rounds': 0, 'status': 'running'}
     try:
         response = page.goto(source_url, wait_until='domcontentloaded', timeout=45000)
@@ -266,6 +287,9 @@ def collect_page(page, source_url, dataset, args, fixture=False):
             clicks = expand_read_controls(page, args.expand_budget)
             after = page.evaluate(EXTRACT_JS)
             added += dataset.ingest(after, source_url, page.url)
+            if post_links is not None:
+                remember_post_links(before, post_links, args.posts_per_page)
+                remember_post_links(after, post_links, args.posts_per_page)
             dataset.save()
             log.update(rounds=n + 1, last_article_count=after['article_count'],
                        last_message_count=after['message_count'])
@@ -331,7 +355,8 @@ def collection_page(pw, args):
 
 
 def collect(args):
-    urls = list(args.url or [])
+    urls = list(BD_PUBLIC_PAGES if args.bd_public_pages else ())
+    urls.extend(args.url or [])
     if args.urls:
         urls += [s.strip() for s in Path(args.urls).read_text(encoding='utf-8-sig').splitlines()
                  if s.strip() and not s.lstrip().startswith('#')]
@@ -350,12 +375,22 @@ def collect(args):
             with collection_page(pw, args) as page:
                 page.set_default_timeout(4000)
                 page.on('dialog', lambda d: d.dismiss())
-                for url in urls:
+                pending = [(url, args.bd_public_pages and url in BD_PUBLIC_PAGES) for url in urls]
+                scheduled = set(urls)
+                cursor = 0
+                while cursor < len(pending):
+                    url, discover = pending[cursor]
+                    cursor += 1
                     if len(dataset.records) >= args.max_records:
                         print('Dataset limit already reached; increase --max-records to continue.')
                         break
                     print(f'Collecting: {url}', flush=True)
-                    result = collect_page(page, url, dataset, args)
+                    post_links = {} if discover else None
+                    result = collect_page(page, url, dataset, args, post_links=post_links)
+                    for post_url in post_links or ():
+                        if post_url not in scheduled:
+                            scheduled.add(post_url)
+                            pending.append((post_url, False))
                     if result['status'] in ('manual_action_required', 'blocked', 'error'):
                         print(result.get('reason', ''), file=sys.stderr)
                         status = 2
@@ -443,6 +478,10 @@ def parser():
             c.add_argument('--expand-budget', type=int, default=8)
             c.add_argument('--manual', action='store_true')
         if name == 'collect':
+            c.add_argument('--bd-public-pages', action='store_true',
+                           help='Scan selected Bangladeshi news, sport and entertainment pages')
+            c.add_argument('--posts-per-page', type=int, choices=range(1, 21), default=4,
+                           metavar='1..20', help='Open up to this many discovered posts per preset page')
             c.add_argument('--url', action='append')
             c.add_argument('--urls', help='UTF-8 file with one HTTPS Facebook URL per line')
             c.add_argument('--attach-chrome', action='store_true',
